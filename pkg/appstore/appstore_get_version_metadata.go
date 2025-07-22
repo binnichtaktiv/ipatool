@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/majd/ipatool/v2/pkg/http"
+	"github.com/binnichtaktiv/ipatool/pkg/http"
 )
 
 type GetVersionMetadataInput struct {

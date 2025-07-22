@@ -2,12 +2,10 @@ package keychain
 
 import (
 	"fmt"
-
-	"github.com/99designs/keyring"
 )
 
 func (k *keychain) Set(key string, data []byte) error {
-	err := k.keyring.Set(keyring.Item{
+	err := k.keyring.Set(Item{
 		Key:  key,
 		Data: data,
 	})

@@ -1,25 +1,21 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/99designs/keyring"
+	"github.com/binnichtaktiv/ipatool/pkg/keychain"
 	cookiejar "github.com/juju/persistent-cookiejar"
-	"github.com/majd/ipatool/v2/pkg/appstore"
-	"github.com/majd/ipatool/v2/pkg/http"
-	"github.com/majd/ipatool/v2/pkg/keychain"
-	"github.com/majd/ipatool/v2/pkg/log"
-	"github.com/majd/ipatool/v2/pkg/util"
-	"github.com/majd/ipatool/v2/pkg/util/machine"
-	"github.com/majd/ipatool/v2/pkg/util/operatingsystem"
+	"github.com/binnichtaktiv/ipatool/pkg/appstore"
+	"github.com/binnichtaktiv/ipatool/pkg/http"
+	"github.com/binnichtaktiv/ipatool/pkg/log"
+	"github.com/binnichtaktiv/ipatool/pkg/util"
+	"github.com/binnichtaktiv/ipatool/pkg/util/machine"
+	"github.com/binnichtaktiv/ipatool/pkg/util/operatingsystem"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
-	"golang.org/x/term"
 )
 
 var dependencies = Dependencies{}
@@ -61,39 +57,32 @@ func newCookieJar(machine machine.Machine) http.CookieJar {
 
 // newKeychain returns a new keychain instance.
 func newKeychain(machine machine.Machine, logger log.Logger, interactive bool) keychain.Keychain {
-	ring := util.Must(keyring.Open(keyring.Config{
-		AllowedBackends: []keyring.BackendType{
-			keyring.KeychainBackend,
-			keyring.SecretServiceBackend,
-			keyring.FileBackend,
-		},
-		ServiceName: KeychainServiceName,
-		FileDir:     filepath.Join(machine.HomeDirectory(), ConfigDirectoryName),
-		FilePasswordFunc: func(s string) (string, error) {
-			if keychainPassphrase == "" && !interactive {
-				return "", errors.New("keychain passphrase is required when not running in interactive mode; use the \"--keychain-passphrase\" flag")
-			}
-
-			if keychainPassphrase != "" {
-				return keychainPassphrase, nil
-			}
-
-			path := strings.Split(s, " unlock ")[1]
-			logger.Log().Msgf("enter passphrase to unlock %s (this is separate from your Apple ID password): ", path)
-			bytes, err := term.ReadPassword(int(os.Stdin.Fd()))
-			if err != nil {
-				return "", fmt.Errorf("failed to read password: %w", err)
-			}
-
-			password := string(bytes)
-			password = strings.Trim(password, "\n")
-			password = strings.Trim(password, "\r")
-
-			return password, nil
-		},
-	}))
-
-	return keychain.New(keychain.Args{Keyring: ring})
+	// Use home directory for keychain storage to avoid permission issues
+	keyringFilePath := filepath.Join(machine.HomeDirectory(), ".ipatool", "ipatool-auth.json")
+	
+	// Ensure directory exists
+	if err := os.MkdirAll(filepath.Dir(keyringFilePath), 0700); err != nil {
+		logger.Error().Err(err).Msg("failed to create keychain directory")
+	}
+	
+	keyring, err := keychain.NewJSONKeyring(keyringFilePath)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to create JSON keyring")
+		
+		// Fallback to temporary file if home directory access fails
+		tmpDir := os.TempDir()
+		keyringFilePath = filepath.Join(tmpDir, "ipatool-auth.json")
+		logger.Log().Msgf("Falling back to temporary storage: %s", keyringFilePath)
+		
+		keyring, err = keychain.NewJSONKeyring(keyringFilePath)
+		if err != nil {
+			// If we can't create a keyring at all, log error and exit
+			logger.Error().Err(err).Msg("failed to create JSON keyring in temp directory")
+			os.Exit(1)
+		}
+	}
+	
+	return keychain.New(keychain.Args{Keyring: keyring})
 }
 
 // initWithCommand initializes the dependencies of the command.

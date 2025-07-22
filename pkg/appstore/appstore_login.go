@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/majd/ipatool/v2/pkg/http"
-	"github.com/majd/ipatool/v2/pkg/util"
+	"github.com/binnichtaktiv/ipatool/pkg/http"
+	"github.com/binnichtaktiv/ipatool/pkg/util"
 )
 
 var (

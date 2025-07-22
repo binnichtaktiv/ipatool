@@ -1,4 +1,4 @@
-module github.com/majd/ipatool/v2
+module github.com/binnichtaktiv/ipatool
 
 go 1.23.0
 

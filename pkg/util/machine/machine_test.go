@@ -4,7 +4,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/majd/ipatool/v2/pkg/util/operatingsystem"
+	"github.com/binnichtaktiv/ipatool/pkg/util/operatingsystem"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"

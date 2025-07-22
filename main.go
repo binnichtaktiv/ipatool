@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/majd/ipatool/v2/cmd"
+	"github.com/binnichtaktiv/ipatool/cmd"
 )
 
 func main() {

@@ -6,7 +6,7 @@ import (
 	gohttp "net/http"
 	"strings"
 
-	"github.com/majd/ipatool/v2/pkg/http"
+	"github.com/binnichtaktiv/ipatool/pkg/http"
 )
 
 var (

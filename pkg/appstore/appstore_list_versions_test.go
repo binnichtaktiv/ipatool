@@ -3,8 +3,8 @@ package appstore
 import (
 	"errors"
 
-	"github.com/majd/ipatool/v2/pkg/http"
-	"github.com/majd/ipatool/v2/pkg/util/machine"
+	"github.com/binnichtaktiv/ipatool/pkg/http"
+	"github.com/binnichtaktiv/ipatool/pkg/util/machine"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"
